@@ -8,8 +8,6 @@ export function assertRupiah(n: unknown): asserts n is number {
   }
 }
 
-export const sumRupiah = (values: number[]) => values.reduce((s, v) => s + v, 0);
-
 export const rupiah = (n: number) => `Rp ${Math.round(n).toLocaleString('id-ID')}`;
 
 /** Compact IDR: 1.250.000 -> "1,3 jt" */

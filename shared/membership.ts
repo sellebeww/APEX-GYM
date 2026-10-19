@@ -31,10 +31,6 @@ export function deriveMembershipStatus(
   return 'ACTIVE';
 }
 
-export function hasValidAccess(profile: { endDate?: string | null; suspended?: boolean | null }, now: Date = new Date()) {
-  return deriveMembershipStatus(profile, now) !== 'EXPIRED';
-}
-
 /**
  * New access period after buying `durationDays` of membership.
  * - Still valid: the new days stack after the current end date.

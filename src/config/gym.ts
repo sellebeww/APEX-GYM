@@ -1,5 +1,4 @@
 /** Single source of truth for gym facts that appear in several places. */
-export const GYM_NAME = 'APEX Gym';
 export const GYM_LEGAL_NAME = 'PT APEX Kebugaran Nusantara';
 
 /** Maximum comfortable headcount used for the live occupancy percentage */

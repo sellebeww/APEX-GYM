@@ -5,7 +5,7 @@ import type { Actor, Deps } from '../context.ts';
 import { tx, type DB } from '../db/index.ts';
 import { audit, SYSTEM_ACTOR, type AuditActor } from '../lib/audit.ts';
 import { newId } from '../lib/crypto.ts';
-import { badRequest, conflict, HttpError, notFound } from '../lib/errors.ts';
+import { conflict, HttpError, notFound } from '../lib/errors.ts';
 import type { GatewayNotification } from '../payments/types.ts';
 import { addPtCredits, applyMembership, requireMember, reverseMembership } from './members.ts';
 
@@ -275,12 +275,6 @@ export function expireStaleOrders(db: DB, now: Date): number {
     .all(cashCutoff, gatewayCutoff) as { id: string; provider: string }[];
   for (const s of stale) closePayment(db, s.id, 'EXPIRED', SYSTEM_ACTOR, now, 'Pesanan kedaluwarsa karena belum dibayar');
   return stale.length;
-}
-
-export function assertPayable(p: PaymentRow | undefined): PaymentRow {
-  if (!p) throw notFound('Pembayaran tidak ditemukan.');
-  if (p.status !== 'PENDING') throw badRequest('Pembayaran ini sudah diproses.');
-  return p;
 }
 
 export { getPayment };
