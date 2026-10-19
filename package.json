@@ -8,6 +8,7 @@
     "dev:web": "vite --port=3000 --host=127.0.0.1",
     "dev:server": "node --watch server/index.ts",
     "build": "vite build",
+    "vercel-build": "node scripts/vercel-build.ts",
     "start": "NODE_ENV=production node server/index.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist",
