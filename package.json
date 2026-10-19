@@ -1,0 +1,54 @@
+{
+  "name": "apex-gym",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.ts",
+    "dev:web": "vite --port=3000 --host=127.0.0.1",
+    "dev:server": "node --watch server/index.ts",
+    "build": "vite build",
+    "start": "NODE_ENV=production node server/index.ts",
+    "preview": "vite preview",
+    "clean": "rm -rf dist",
+    "admin:create": "node scripts/create-admin.ts",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.server.json && tsc -p tsconfig.e2e.json",
+    "lint": "oxlint",
+    "test": "vitest run",
+    "test:e2e": "npm run build && playwright test",
+    "check": "npm run typecheck && npm run lint && npm test && npm run build"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.5",
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^6.1.1",
+    "better-sqlite3": "^12.11.1",
+    "canvas-confetti": "^1.9.4",
+    "hono": "^4.13.13",
+    "jsqr": "^1.4.0",
+    "lucide-react": "^0.546.0",
+    "motion": "^12.23.24",
+    "qrcode": "^1.5.4",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "vite": "^8.3.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.64.0",
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/canvas-confetti": "^1.9.0",
+    "@types/node": "^24.19.2",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "oxlint": "^1.88.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=22.18"
+  }
+}

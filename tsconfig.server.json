@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": [
+      "node"
+    ],
+    "lib": [
+      "ES2023"
+    ],
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "rewriteRelativeImportExtensions": false,
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  },
+  "include": [
+    "scripts",
+    "server",
+    "shared",
+    "src/lib/announcements.ts",
+    "src/types",
+    "tests/server"
+  ]
+}

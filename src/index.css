@@ -1,0 +1,304 @@
+@import "tailwindcss";
+
+/*
+ * APEX GYM design system
+ * Derived from the logo: pure white geometry on black, wide geometric
+ * lettering, hard angular cuts. The brand is monochrome, so colour is
+ * reserved for status (success / warning / danger / info) only.
+ */
+@theme {
+  /* Typography: Archivo (width axis) echoes the extended APEX wordmark */
+  --font-display: 'Archivo', system-ui, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Brand: logo white on logo black */
+  --color-brand: #F5F5F5;
+  --color-brand-hover: #FFFFFF;
+  --color-ink: #050505;
+  --color-surface: #0E0E0F;
+  --color-surface-2: #161617;
+  --color-line: #232325;
+  --color-line-strong: #3A3A3D;
+
+  /* Lifted so small secondary text (zinc-500) clears WCAG AA contrast on the dark surfaces */
+  --color-zinc-500: #8B8B94;
+  --color-zinc-600: #7A7A85;
+}
+
+:root {
+  color-scheme: dark;
+  --bg-app: #050505;
+  --text-app: #F5F5F5;
+  --text-muted: #A1A1AA;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-app);
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Wide, confident headings in the spirit of the wordmark */
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+  font-stretch: 112%;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.font-tabular {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+}
+
+/* Accessible, brand-consistent focus ring for every interactive element */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+:where(input, select, textarea):focus-visible {
+  outline-offset: 0;
+}
+
+/* Skip link for keyboard users */
+.skip-link {
+  position: fixed;
+  left: 12px;
+  top: -64px;
+  z-index: 200;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: var(--color-brand);
+  color: #000;
+  font-weight: 700;
+  font-size: 13px;
+  transition: top 0.15s ease;
+}
+.skip-link:focus {
+  top: 12px;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-line-strong);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #52525B;
+}
+
+/* Smooth continuous marquee animation */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 32s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Soft white halo for primary highlights */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 14px rgba(255, 255, 255, 0.08), inset 0 0 8px rgba(255, 255, 255, 0.03);
+  }
+  50% {
+    box-shadow: 0 0 26px rgba(255, 255, 255, 0.22), inset 0 0 12px rgba(255, 255, 255, 0.06);
+  }
+}
+
+.glow-brand {
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+
+/* Laser scan line for QR code scanner */
+@keyframes laserScan {
+  0% {
+    top: 0%;
+    opacity: 0.2;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    top: 96%;
+    opacity: 0.2;
+  }
+}
+
+.animate-laser-scan {
+  animation: laserScan 2.4s ease-in-out infinite alternate;
+}
+
+/* Gentle floating animation for badges and cards */
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 5s ease-in-out infinite;
+}
+
+/* Ambient radar ping for live gym status */
+@keyframes radarPulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.animate-radar-pulse {
+  animation: radarPulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Shimmer pass for premium highlight elements */
+@keyframes shimmerPass {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmerPass 3.5s infinite;
+}
+
+/* Subtle flame animation for workout streaks (warm, not brand-coloured) */
+@keyframes flameFlicker {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.5));
+  }
+  25% {
+    transform: scale(1.08) rotate(-3deg);
+    filter: drop-shadow(0 0 12px rgba(249, 115, 22, 0.7));
+  }
+  75% {
+    transform: scale(0.96) rotate(3deg);
+    filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.6));
+  }
+}
+
+.animate-flame {
+  animation: flameFlicker 2.5s ease-in-out infinite;
+}
+
+/* Subtle background dot pattern */
+.bg-grid-pattern {
+  background-size: 32px 32px;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+/* Angular cut corner echoing the logo's sliced geometry */
+.clip-apex {
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-marquee,
+  .animate-laser-scan,
+  .animate-float-slow,
+  .animate-radar-pulse,
+  .animate-shimmer,
+  .animate-flame,
+  .glow-brand {
+    animation: none !important;
+  }
+}
+
+/* Hide scrollbar on horizontally scrollable strips */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Offset in-page anchors so the sticky header never covers section titles */
+section[id], div[id] {
+  scroll-margin-top: 5.5rem;
+}
+
+/* Printable documents (invoices): print only the .print-area, in black on white */
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible !important;
+    color: #000 !important;
+    background: transparent !important;
+    border-color: #ccc !important;
+    box-shadow: none !important;
+  }
+  .print-area {
+    position: fixed;
+    inset: 0;
+    padding: 32px;
+    background: #fff !important;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out both;
+}
