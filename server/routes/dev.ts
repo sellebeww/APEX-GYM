@@ -45,7 +45,7 @@ export const devRoutes = new Hono<AppEnv>()
       | undefined;
     if (!user) throw notFound('Akun demo tidak ditemukan.');
     const now = deps.now();
-    const session = createSession(deps.db, user.id, deps.config.sessionTtlHours, now, { ip: c.get('ip'), userAgent: c.req.header('user-agent') ?? '' });
+    const session = createSession(deps.db, user.id, deps.config.sessionTtlHours, now, { ip: c.get('ip'), userAgent: c.req.header('user-agent') ?? '' }, deps.config.sessionSecret);
     audit(deps.db, user, 'DEMO_LOGIN', 'Masuk lewat pemilih akun demo (mode development)', c.get('ip'), now);
     setSessionCookie(c, session.token, session.expires);
     return c.json({ ok: true, role: user.role });

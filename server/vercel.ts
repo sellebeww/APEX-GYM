@@ -1,5 +1,6 @@
 // Vercel Function entry: the whole API as one Node handler (bundled by scripts/vercel-build.ts).
 import { getRequestListener } from '@hono/node-server';
+import { createHash } from 'node:crypto';
 import { createApp } from './app.ts';
 import { loadConfig } from './config.ts';
 import { migrate, openDatabase } from './db/index.ts';
@@ -11,8 +12,13 @@ const publicUrl = `https://${hosts[0] ?? 'localhost'}`;
 
 // shortcut: demo mode on a per-instance SQLite in /tmp. Data resets on every cold start and is not shared
 // between instances. Move to a hosted database (e.g. Turso/Postgres) before real members use this.
+// Secrets must be identical on every instance or sessions/QR codes break when a request lands elsewhere.
+// The fallback is guessable, which is acceptable only because demo mode already lets anyone sign in as any account.
+const demoSecret = (name: string) => process.env[name] || createHash('sha256').update(`apex-demo:${name}:${process.env.VERCEL_PROJECT_ID ?? ''}`).digest('hex');
 const config = loadConfig({
   ...process.env,
+  SESSION_SECRET: demoSecret('SESSION_SECRET'),
+  QR_SIGNING_SECRET: demoSecret('QR_SIGNING_SECRET'),
   NODE_ENV: 'development',
   DEMO_MODE: 'true',
   DATABASE_PATH: '/tmp/apex.db',

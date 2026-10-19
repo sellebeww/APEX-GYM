@@ -1,7 +1,8 @@
 import type { Actor, Deps, Role } from '../context.ts';
 import { tx, type DB } from '../db/index.ts';
 import { audit } from '../lib/audit.ts';
-import { hashPassword, newId, randomCode, randomToken, sha256, verifyAgainstDummy, verifyPassword } from '../lib/crypto.ts';
+import { timingSafeEqual } from 'node:crypto';
+import { hashPassword, hmacSha256, newId, randomCode, randomToken, sha256, verifyAgainstDummy, verifyPassword } from '../lib/crypto.ts';
 import { badRequest, conflict, HttpError, unauthorized } from '../lib/errors.ts';
 
 export const MAX_FAILED_LOGINS = 8;
@@ -19,9 +20,13 @@ interface UserRow {
   must_change_password: number;
 }
 
-export function createSession(db: DB, userId: string, ttlHours: number, now: Date, meta: { ip: string; userAgent: string }) {
-  const token = randomToken(32);
+const signSession = (secret: string, payload: string) => hmacSha256(secret, `session:${payload}`).toString('base64url');
+
+export function createSession(db: DB, userId: string, ttlHours: number, now: Date, meta: { ip: string; userAgent: string }, secret?: string | null) {
   const expires = new Date(now.getTime() + ttlHours * 3_600_000);
+  // With a secret the token is self-verifying (nonce.userId.expiry.sig), see resolveSession
+  const payload = `${randomToken(24)}.${userId}.${expires.getTime()}`;
+  const token = secret ? `${payload}.${signSession(secret, payload)}` : randomToken(32);
   db.prepare('INSERT INTO sessions (token_hash, user_id, created_at, expires_at, last_seen_at, ip, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?)').run(
     sha256(token),
     userId,
@@ -36,16 +41,39 @@ export function createSession(db: DB, userId: string, ttlHours: number, now: Dat
   return { token, expires };
 }
 
+/**
+ * Demo/serverless only: a signed token unknown to this database (other instance, or a cold start wiped /tmp)
+ * is re-registered locally. shortcut: logout/password change elsewhere cannot revoke it; demo mode only.
+ */
+function adoptSignedSession(db: DB, token: string, hash: string, now: Date, secret: string) {
+  const parts = token.split('.');
+  if (parts.length !== 4) return;
+  const [nonce, userId, exp, sig] = parts;
+  const expected = Buffer.from(signSession(secret, `${nonce}.${userId}.${exp}`));
+  const given = Buffer.from(sig);
+  if (given.length !== expected.length || !timingSafeEqual(given, expected) || !(Number(exp) > now.getTime())) return;
+  if (!db.prepare('SELECT 1 FROM users WHERE id = ? AND is_active = 1').get(userId)) return;
+  db.prepare(
+    'INSERT OR IGNORE INTO sessions (token_hash, user_id, created_at, expires_at, last_seen_at, ip, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  ).run(hash, userId, now.toISOString(), new Date(Number(exp)).toISOString(), now.toISOString(), 'signed', '');
+}
+
 /** Resolves a session cookie to an actor; expired or disabled accounts resolve to null. */
-export function resolveSession(db: DB, token: string | undefined, now: Date): Actor | null {
+export function resolveSession(db: DB, token: string | undefined, now: Date, secret?: string | null): Actor | null {
   if (!token || token.length > 200) return null;
   const hash = sha256(token);
-  const row = db
-    .prepare(
-      `SELECT s.expires_at, s.last_seen_at, u.id, u.name, u.role, u.email, u.is_active, u.must_change_password
-       FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ?`
-    )
-    .get(hash) as (UserRow & { expires_at: string; last_seen_at: string }) | undefined;
+  const find = () =>
+    db
+      .prepare(
+        `SELECT s.expires_at, s.last_seen_at, u.id, u.name, u.role, u.email, u.is_active, u.must_change_password
+         FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ?`
+      )
+      .get(hash) as (UserRow & { expires_at: string; last_seen_at: string }) | undefined;
+  let row = find();
+  if (!row && secret) {
+    adoptSignedSession(db, token, hash, now, secret);
+    row = find();
+  }
   if (!row || row.expires_at <= now.toISOString() || !row.is_active) return null;
   if (now.getTime() - new Date(row.last_seen_at).getTime() > 5 * 60_000) {
     db.prepare('UPDATE sessions SET last_seen_at = ? WHERE token_hash = ?').run(now.toISOString(), hash);
@@ -77,7 +105,7 @@ export async function login(deps: Deps, emailInput: string, password: string, me
   }
   return tx(db, () => {
     db.prepare('UPDATE users SET failed_logins = 0, locked_until = NULL WHERE id = ?').run(user.id);
-    const session = createSession(db, user.id, deps.config.sessionTtlHours, now, meta);
+    const session = createSession(db, user.id, deps.config.sessionTtlHours, now, meta, deps.config.sessionSecret);
     audit(db, { id: user.id, name: user.name, role: user.role }, 'LOGIN', 'Masuk ke aplikasi', meta.ip, now);
     return { session, user };
   });
@@ -126,7 +154,7 @@ export async function registerMember(
     db.prepare(
       `INSERT INTO member_profiles (user_id, plan_name, referral_code, referred_by, updated_at) VALUES (?, 'Belum ada paket', ?, ?, ?)`
     ).run(id, generateReferralCode(db, input.name), referrer?.user_id ?? null, iso);
-    const session = createSession(db, id, deps.config.sessionTtlHours, now, meta);
+    const session = createSession(db, id, deps.config.sessionTtlHours, now, meta, deps.config.sessionSecret);
     audit(
       db,
       { id, name: input.name, role: 'MEMBER' },
@@ -150,7 +178,7 @@ export async function changePassword(deps: Deps, actor: Actor, current: string, 
     db.prepare('UPDATE users SET password_hash = ?, must_change_password = 0, updated_at = ? WHERE id = ?').run(hash, now.toISOString(), actor.id);
     // Sign out every other device; keep the current browser signed in with a fresh session
     db.prepare('DELETE FROM sessions WHERE user_id = ?').run(actor.id);
-    const session = createSession(db, actor.id, deps.config.sessionTtlHours, now, meta);
+    const session = createSession(db, actor.id, deps.config.sessionTtlHours, now, meta, deps.config.sessionSecret);
     audit(db, actor, 'CHANGE_PASSWORD', 'Password diganti; sesi di perangkat lain dikeluarkan', meta.ip, now);
     return session;
   });

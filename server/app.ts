@@ -73,7 +73,9 @@ export function createApp(deps: Deps) {
   app.use('/api/*', async (c, next) => {
     if (SAFE_METHODS.has(c.req.method) || c.req.path.startsWith('/api/payments/webhooks/')) return next();
     const origin = c.req.header('origin');
-    if (origin && !deps.config.allowedOrigins.includes(origin.replace(/\/$/, ''))) throw forbidden('Permintaan dari origin yang tidak diizinkan.');
+    // Same host as the request itself is always same-origin (covers every Vercel alias/custom domain)
+    const sameHost = !!origin && URL.canParse(origin) && new URL(origin).host === new URL(c.req.url).host;
+    if (origin && !sameHost && !deps.config.allowedOrigins.includes(origin.replace(/\/$/, ''))) throw forbidden('Permintaan dari origin yang tidak diizinkan.');
     const site = c.req.header('sec-fetch-site');
     if (site && site !== 'same-origin' && site !== 'none' && !origin) throw forbidden('Permintaan lintas situs ditolak.');
     if (c.req.header('x-apex-csrf') !== '1') throw forbidden('Header keamanan permintaan tidak ada.');
@@ -81,7 +83,7 @@ export function createApp(deps: Deps) {
   });
 
   app.use('/api/*', async (c, next) => {
-    c.set('actor', resolveSession(deps.db, getCookie(c, sessionCookieName(deps.config)), deps.now()));
+    c.set('actor', resolveSession(deps.db, getCookie(c, sessionCookieName(deps.config)), deps.now(), deps.config.sessionSecret));
     await next();
   });
 

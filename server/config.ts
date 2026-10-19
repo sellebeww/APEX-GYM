@@ -17,6 +17,8 @@ export interface AppConfig {
   cookieSecure: boolean;
   trustProxy: boolean;
   qrSigningSecret: string;
+  /** Demo only: signs session tokens so serverless instances with separate databases accept each other's sessions */
+  sessionSecret: string | null;
   /** Development-only conveniences: one-click demo accounts and payment simulator controls */
   demoMode: boolean;
   paymentProvider: PaymentProviderName;
@@ -86,6 +88,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     cookieSecure: bool(env.COOKIE_SECURE, isProduction),
     trustProxy: bool(env.TRUST_PROXY, false),
     qrSigningSecret,
+    sessionSecret: demoMode && (env.SESSION_SECRET ?? '').length >= 32 ? env.SESSION_SECRET! : null,
     demoMode,
     paymentProvider,
     midtrans: { serverKey: midtransServerKey, isProduction: bool(env.MIDTRANS_IS_PRODUCTION, false) },
