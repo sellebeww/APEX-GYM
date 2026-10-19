@@ -2,6 +2,7 @@
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import { build } from 'rolldown';
+import { securityHeaders } from '../server/app.ts';
 
 const out = '.vercel/output';
 const fn = `${out}/functions/api.func`;
@@ -27,6 +28,8 @@ fs.writeFileSync(`${fn}/.vc-config.json`, JSON.stringify({ runtime: `nodejs${nod
 fs.writeFileSync(`${out}/config.json`, JSON.stringify({
   version: 3,
   routes: [
+    // The CDN serves the SPA directly, so give it the same headers the Node server adds locally
+    { src: '^/(.*)$', headers: securityHeaders(true), continue: true },
     { src: '^/assets/(.*)$', headers: { 'Cache-Control': 'public, max-age=31536000, immutable' }, continue: true },
     { handle: 'filesystem' },
     { src: '^/api(/.*)?$', dest: '/api' },
