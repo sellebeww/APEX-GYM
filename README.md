@@ -87,6 +87,14 @@ Backup/restore: salin DB dengan `sqlite3 data/apex.db ".backup 'backup.db'"` (am
 
 Checklist deployment: typecheck/lint/test/E2E hijau → env production terisi → backup dibuat → deploy → `/api/health` OK → login admin → pembelian uji kecil di sandbox Midtrans → webhook sampai → QR check-in uji. Rollback: kembalikan kode dan `dist/` versi sebelumnya; restore backup DB bila rilis baru menambah migrasi (`server/db/migrations/*.sql`).
 
+## Demo di Vercel
+
+`npm run vercel-build` membuat bundle Build Output API: SPA statis + seluruh API sebagai satu Node Function (`server/vercel.ts`), dalam mode demo di SQLite sementara `/tmp`.
+
+- Data **reset** setiap cold start dan **tidak dibagi** antar-instance. Cocok untuk demo, bukan untuk member sungguhan (butuh database terkelola).
+- Sesi demo ditandatangani HMAC (`SESSION_SECRET`) sehingga tetap valid saat request jatuh ke instance lain atau setelah cold start; ganti akun lewat pemilih demo tetap jalan.
+- Set `SESSION_SECRET` dan `QR_SIGNING_SECRET` (masing-masing `openssl rand -hex 32`) di Environment Variables Vercel. Tanpa itu dipakai nilai turunan yang bisa ditebak, aman hanya karena mode demo memang membuka semua akun.
+
 ## Batasan dan yang belum terbukti
 
 - Safari/iOS **belum diuji di perangkat**. Scanner memakai `BarcodeDetector` bila ada, jika tidak memakai `jsqr` (decode diuji unit, bukan dengan kamera nyata); kamera butuh HTTPS. Input manual/barcode reader selalu tersedia dan divalidasi server.
