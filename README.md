@@ -11,6 +11,7 @@
 
 <p><img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white&labelColor=3a3f47" alt="React 19"> <img src="https://img.shields.io/badge/TypeScript-7-3178C6?logo=typescript&logoColor=white&labelColor=3a3f47" alt="TypeScript 7"> <img src="https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white&labelColor=3a3f47" alt="Vite 8"> <img src="https://img.shields.io/badge/Tailwind-4-38BDF8?logo=tailwindcss&logoColor=white&labelColor=3a3f47" alt="Tailwind 4"> <img src="https://img.shields.io/badge/Hono-API-E36002?logo=hono&logoColor=white&labelColor=3a3f47" alt="Hono API"> <img src="https://img.shields.io/badge/SQLite-better--sqlite3-003B57?logo=sqlite&logoColor=white&labelColor=3a3f47" alt="SQLite better-sqlite3"> <img src="https://img.shields.io/badge/status-siap%20staging-d4a017?labelColor=3a3f47" alt="status siap staging"></p>
 
+<p><a href="https://sellebew-apex-gym.vercel.app"><b>Lihat demo langsung &rarr;</b></a></p>
 </div>
 
 > **Status:** siap diuji dan siap staging. **Belum terbukti siap untuk pelanggan nyata**: pembayaran Midtrans belum pernah diuji terhadap akun sandbox/produksi sungguhan, Safari/iOS belum diuji di perangkat, dan belum ada penetration test independen. Lihat [Batasan](#batasan-dan-yang-belum-terbukti).
