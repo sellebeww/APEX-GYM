@@ -390,7 +390,7 @@ export const PublicCompanyProfile: React.FC<PublicCompanyProfileProps> = ({ onOp
               onClick={() => onOpenAuth('register')}
               className="px-6 py-3.5 text-sm font-bold text-black bg-white hover:bg-zinc-200 rounded-lg shrink-0 transition-colors whitespace-nowrap"
             >
-              Coba Aplikasi Sekarang
+              Buka Demo
             </button>
           </motion.div>
         </div>
